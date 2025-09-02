@@ -52,4 +52,8 @@
         LIMIT 10
     </select>
 
+    <update id="updateBalanceByIds">
+        update user set balance = balance - #{amount} ${ew.customSqlSegment}
+    </update>
+
 </mapper>
