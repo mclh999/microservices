@@ -56,4 +56,8 @@
         update user set balance = balance - #{amount} ${ew.customSqlSegment}
     </update>
 
+    <update id="updateBalanceById">
+        update user set balance = balance - #{money} where id = #{id}
+    </update>
+
 </mapper>
