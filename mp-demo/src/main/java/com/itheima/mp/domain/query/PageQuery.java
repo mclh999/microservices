@@ -3,13 +3,14 @@ package com.itheima.mp.domain.query;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 public class PageQuery {
-    private Integer pageNo;
-    private Integer pageSize;
+    private Integer pageNo = 1;
+    private Integer pageSize = 5;
     private String sortBy;
-    private Boolean isAsc;
+    private Boolean isAsc = true;
 
     public <T>  Page<T> toMpPage(OrderItem ... orders){
         // 1.分页条件
@@ -27,6 +28,7 @@ public class PageQuery {
         return p;
     }
 
+    //通过方法重载，便于调用
     public <T> Page<T> toMpPage(String defaultSortBy, boolean isAsc){
         return this.toMpPage(new OrderItem(defaultSortBy, isAsc));
     }

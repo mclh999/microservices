@@ -18,6 +18,7 @@ public class PageDTO<V> {
     private Long total;
     private Long pages;
     private List<V> list;
+    //建议将下面的所有相关的方法抽取到一个工具类里面，如果不使用MP的话就可能会出现问题
 
     /**
      * 返回空分页结果
@@ -32,6 +33,8 @@ public class PageDTO<V> {
 
     /**
      * 将MybatisPlus分页结果转为 VO分页结果
+     * 别人转自己就用OF
+     * 因为类的泛型在实例化时才能加载，静态方法初始化时就会加载，所以不能使用类的泛型T，需要自己定义泛型
      * @param p MybatisPlus的分页结果
      * @param voClass 目标VO类型的字节码
      * @param <V> 目标VO类型
@@ -46,7 +49,7 @@ public class PageDTO<V> {
             return empty(p);
         }
         // 2.数据转换
-        List<V> vos = BeanUtil.copyToList(records, voClass);
+        List<V> vos = BeanUtil.copyToList(records, voClass);//调用者传入字节码
         // 3.封装返回
         return new PageDTO<>(p.getTotal(), p.getPages(), vos);
     }

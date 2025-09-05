@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface UserMapper extends BaseMapper<User> {
 
+    //因为使用的是自定义的SQL，所以不能被mp的TableField注解识别
     void saveUser(User user);
 
     void deleteUser(Long id);

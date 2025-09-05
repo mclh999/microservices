@@ -16,6 +16,9 @@ mybatis-plus:
   global-config:
       db-config:
         id-type: auto
+        logic-delete-field-name: deleted # 逻辑删除字段
+  configuration:
+    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler
 
 #swagger相关配置
 knife4j:

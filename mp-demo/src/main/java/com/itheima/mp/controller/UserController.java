@@ -2,6 +2,7 @@ package com.itheima.mp.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.itheima.mp.domain.dto.PageDTO;
 import com.itheima.mp.domain.dto.UserFormDTO;
 import com.itheima.mp.domain.po.User;
 import com.itheima.mp.domain.query.UserQuery;
@@ -40,15 +41,14 @@ public class UserController {
 
     @GetMapping("/{id}")
     public UserVO get(@PathVariable Long id){
-        User user = userService.getById(id);
-        return BeanUtil.copyProperties(user, UserVO.class);
+        //包含了地址
+        return userService.queryUserByid(id);
     }
 
     @GetMapping
     @ApiOperation("批量查询")
     public List<UserVO> list(@RequestParam("ids") List<Long>ids){
-        List<User> userList = userService.listByIds(ids);
-        return BeanUtil.copyToList(userList, UserVO.class);
+        return userService.queryUsersByIds(ids);
     }
 
     @PutMapping("/{id}/deduction/{money}")
@@ -62,6 +62,15 @@ public class UserController {
         List<User> userList = userService.queryUsers(userQuery);
         return BeanUtil.copyToList(userList, UserVO.class);
     }
+
+    /**
+     * 分页查询
+     */
+    @GetMapping("/page")
+    public PageDTO<UserVO> page(UserQuery userQuery){
+        return userService.queryUsersPage(userQuery);
+    }
+
 
 
 }
