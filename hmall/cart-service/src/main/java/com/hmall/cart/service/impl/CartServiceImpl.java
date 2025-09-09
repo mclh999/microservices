@@ -1,21 +1,28 @@
-package com.hmall.service.impl;
+package com.hmall.cart.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.hmall.cart.domain.dto.CartFormDTO;
+import com.hmall.cart.domain.dto.ItemDTO;
+import com.hmall.cart.domain.po.Cart;
+import com.hmall.cart.domain.vo.CartVO;
+import com.hmall.cart.mapper.CartMapper;
+import com.hmall.cart.service.ICartService;
 import com.hmall.common.exception.BizIllegalException;
 import com.hmall.common.utils.BeanUtils;
 import com.hmall.common.utils.CollUtils;
 import com.hmall.common.utils.UserContext;
-import com.hmall.domain.dto.CartFormDTO;
-import com.hmall.domain.dto.ItemDTO;
-import com.hmall.domain.po.Cart;
-import com.hmall.domain.vo.CartVO;
-import com.hmall.mapper.CartMapper;
-import com.hmall.service.ICartService;
-import com.hmall.service.IItemService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Collection;
 import java.util.List;
@@ -36,7 +43,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements ICartService {
 
-    private final IItemService itemService;
+    //用于访问商品服务
+    private final RestTemplate restTemplate;
+
+    //用于服务发现
+    private final DiscoveryClient discoveryClient;
 
     @Override
     public void addItem2Cart(CartFormDTO cartFormDTO) {
@@ -64,7 +75,7 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements IC
     @Override
     public List<CartVO> queryMyCarts() {
         // 1.查询我的购物车列表
-        List<Cart> carts = lambdaQuery().eq(Cart::getUserId, UserContext.getUser()).list();
+        List<Cart> carts = lambdaQuery().eq(Cart::getUserId, 1/*3.TODO UserContext.getUser()*/).list();
         if (CollUtils.isEmpty(carts)) {
             return CollUtils.emptyList();
         }
@@ -79,11 +90,40 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements IC
         return vos;
     }
 
+
     private void handleCartItems(List<CartVO> vos) {
         // 1.获取商品id
         Set<Long> itemIds = vos.stream().map(CartVO::getItemId).collect(Collectors.toSet());
         // 2.查询商品
-        List<ItemDTO> items = itemService.queryItemByIds(itemIds);
+//        List<ItemDTO> items = itemService.queryItemByIds(itemIds);
+
+        //发现item-service服务的实例列表
+        List<ServiceInstance> instances = discoveryClient.getInstances("item-service");
+        if(CollUtils.isEmpty(instances)){
+            return;
+        }
+
+        //负载均衡策略
+        ServiceInstance instance = instances.get(RandomUtil.randomInt(instances.size()));
+
+        //用restTemplate发起请求，获取HTTP的响应
+        ResponseEntity<List<ItemDTO>> response = restTemplate.exchange(
+                instance.getUri()+"/items?ids={ids}",//传入请求地址
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<ItemDTO>>() {
+                },//字节码会擦除泛型，这里传入一个对象，泛型会保留，即参数化类型的引用
+                Map.of("ids", CollUtil.join(itemIds, ","))
+        );
+
+        //如果不成功就直接返回
+        if(!response.getStatusCode().is2xxSuccessful()){
+            return;
+        }
+
+        //解析响应
+        List<ItemDTO> items = response.getBody();
+
         if (CollUtils.isEmpty(items)) {
             return;
         }
