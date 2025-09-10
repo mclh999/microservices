@@ -3,9 +3,9 @@ server:
 spring:
   application:
     name: cart-service
-    cloud:
-      nacos:
-        server-addr: 192.168.100.128:8848
+  cloud:
+    nacos:
+      server-addr: 192.168.100.128:8848
   profiles:
     active: dev
   datasource:
@@ -55,3 +55,6 @@ hm:
       - /items/**
       - /hi
 # keytool -genkeypair -alias hmall -keyalg RSA -keypass hmall123 -keystore hmall.jks -storepass hmall123
+feign:
+  okhttp:
+    enabled: true # 开启OKHttp功能

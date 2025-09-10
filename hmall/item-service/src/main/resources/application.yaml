@@ -2,10 +2,10 @@ server:
   port: 8081 #记得修改端口号，防止冲突
 spring:
   application:
-    name: item-service #微服务名称
+    name: item-service
   cloud:
     nacos:
-      server-addr: 192.168.100.128:8848 # nacos地址
+      server-addr: 192.168.100.128:8848
   profiles:
     active: dev
   datasource:
