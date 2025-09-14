@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: pay-service
+  cloud:
+    nacos:
+      server-addr: 192.168.100.128:8848
+      discovery:
+        # 禁用gRPC，使用HTTP连接
+        use-grpc: false
+      config:
+        file-extension: yaml

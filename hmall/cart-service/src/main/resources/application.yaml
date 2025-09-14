@@ -1,8 +1,21 @@
 server:
   port: 8082
+  tomcat:
+    threads:
+      max: 50 # 允许的最大线程数
+    accept-count: 50 # 最大排队等待数量
+    max-connections: 100 # 允许的最大连接
+spring:
+  cloud:
+    sentinel:
+      transport:
+        dashboard: localhost:8090 # 这个跟feign无关
+      http-method-specify: true # 开启请求方式前缀,便于区分不同接口
 feign:
   okhttp:
     enabled: true # 开启OKHttp连接池支持
+  sentinel:
+    enabled: true # 开启Feign对Sentinel支持
 hm:
   swagger:
     title: 购物车服务接口文档
