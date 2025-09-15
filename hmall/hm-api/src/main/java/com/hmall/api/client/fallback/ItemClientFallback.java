@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Slf4j
-public class ItemFallback implements FallbackFactory<ItemClient> {
+public class ItemClientFallback implements FallbackFactory<ItemClient> {
     @Override
     public ItemClient create(Throwable cause) {
         return new ItemClient() {

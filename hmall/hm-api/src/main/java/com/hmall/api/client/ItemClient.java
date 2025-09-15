@@ -1,6 +1,6 @@
 package com.hmall.api.client;
 
-import com.hmall.api.client.fallback.ItemFallback;
+import com.hmall.api.client.fallback.ItemClientFallback;
 import com.hmall.api.config.DefaultFeignConfig;
 import com.hmall.api.dto.ItemDTO;
 import com.hmall.api.dto.OrderDetailDTO;
@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.List;
 
 @FeignClient(value = "item-service",configuration = DefaultFeignConfig.class,
-            fallbackFactory = ItemFallback.class)
+            fallbackFactory = ItemClientFallback.class)
 public interface ItemClient {
 
     @GetMapping("/items")

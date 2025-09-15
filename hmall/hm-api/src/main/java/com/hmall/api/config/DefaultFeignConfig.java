@@ -1,6 +1,6 @@
 package com.hmall.api.config;
 
-import com.hmall.api.client.fallback.ItemFallback;
+import com.hmall.api.client.fallback.ItemClientFallback;
 import com.hmall.common.utils.UserContext;
 import feign.Logger;
 import feign.RequestInterceptor;
@@ -31,7 +31,7 @@ public class DefaultFeignConfig {
     }
 
     @Bean//一般是写在一个独立的配置类里
-    public ItemFallback itemFallback(){
-        return new ItemFallback();
+    public ItemClientFallback itemFallback(){
+        return new ItemClientFallback();
     }
 }
