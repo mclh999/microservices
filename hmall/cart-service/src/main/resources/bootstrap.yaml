@@ -12,6 +12,7 @@ spring:
           - data-id: jdbc-shared.yaml
           - data-id: jdbc-log.yaml
           - data-id: jdbc-swagger.yaml
+          - data-id: shared-seata.yaml
       discovery:
         # 禁用gRPC，使用HTTP连接
         use-grpc: false
