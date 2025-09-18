@@ -5,7 +5,12 @@ feign:
     enabled: true
   sentinel:
     enabled: true
-
+spring:
+  cloud:
+    sentinel:
+      transport:
+        dashboard: localhost:8090 # 这个跟feign无关
+      http-method-specify: true # 开启请求方式前缀,便于区分不同接口
 hm:
   swagger:
     title: 交易服务接口文档

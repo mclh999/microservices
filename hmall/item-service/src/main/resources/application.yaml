@@ -1,5 +1,16 @@
 server:
   port: 8081 #记得修改端口号，防止冲突
+spring:
+  cloud:
+    sentinel:
+      transport:
+        dashboard: localhost:8090 # 这个跟feign无关
+      http-method-specify: true # 开启请求方式前缀,便于区分不同接口
+feign:
+  okhttp:
+    enabled: true # 开启OKHttp连接池支持
+  sentinel:
+    enabled: true # 开启Feign对Sentinel支持
 hm:
   swagger:
     title: 商品管理接口文档

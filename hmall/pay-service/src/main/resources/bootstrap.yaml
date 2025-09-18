@@ -1,11 +1,18 @@
 spring:
   application:
     name: pay-service
+  profiles:
+    active: dev
   cloud:
     nacos:
       server-addr: 192.168.100.128:8848
+      config:
+        file-extension: yaml # 指定文件类型
+        shared-configs: # 指定共享的配置
+          - data-id: jdbc-shared.yaml
+          - data-id: jdbc-log.yaml
+          - data-id: jdbc-swagger.yaml
+          - data-id: shared-seata.yaml
       discovery:
         # 禁用gRPC，使用HTTP连接
         use-grpc: false
-      config:
-        file-extension: yaml
