@@ -15,6 +15,8 @@ import com.hmall.trade.service.IOrderDetailService;
 import com.hmall.trade.service.IOrderService;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -33,12 +35,14 @@ import java.util.stream.Collectors;
  * @since 2023-05-05
  */
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements IOrderService {
 
     private final IOrderDetailService detailService;
     private final ItemClient itemClient;
     private final CartClient cartClient;
+    private final RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @Override
     @GlobalTransactional //seata的事务标记起点，让seata知道哪些方法需要加入事务
@@ -74,7 +78,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         detailService.saveBatch(details);
 
         // 3.清理购物车商品
-        cartClient.removeByItemIds(itemIds);
+//        cartClient.removeByItemIds(itemIds);
+        //使用MQ进行异步消息处理
+        try {
+            //传入用户ID和购物车里的商品ID,这里的message是amqp的
+
+            log.info("消息发送成功");
+        } catch (Exception e) {
+            log.error("发送创建订单消息异常！订单ID = {}", order.getId(), e);
+        }
 
         // 4.扣减库存
         try {

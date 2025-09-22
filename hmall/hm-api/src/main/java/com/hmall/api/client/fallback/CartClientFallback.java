@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FallbackFactory;
 
 import java.util.Collection;
 
-public class CartClienFallback implements FallbackFactory<CartClient> {
+public class CartClientFallback implements FallbackFactory<CartClient> {
     @Override
     public CartClient create(Throwable cause) {
         return new CartClient() {

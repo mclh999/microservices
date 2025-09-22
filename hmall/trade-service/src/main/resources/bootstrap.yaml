@@ -16,4 +16,5 @@ spring:
           - data-id: jdbc-log.yaml
           - data-id: jdbc-swagger.yaml
           - data-id: shared-seata.yaml
+          - data-id: shared-rabbitMQ.yaml
 

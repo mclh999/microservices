@@ -1,6 +1,9 @@
 package com.hmall.api.config;
 
+import com.hmall.api.client.fallback.CartClientFallback;
 import com.hmall.api.client.fallback.ItemClientFallback;
+import com.hmall.api.client.fallback.OrderClientFallback;
+import com.hmall.api.client.fallback.UserClientFallback;
 import com.hmall.common.utils.UserContext;
 import feign.Logger;
 import feign.RequestInterceptor;
@@ -23,15 +26,30 @@ public class DefaultFeignConfig {
             public void apply(RequestTemplate requestTemplate) {
                 Long userId = UserContext.getUser();
                 if(userId != null){
-                    requestTemplate.header("user_info",userId.toString());//将经过网关的微服务的userId传递给服务提供者
+                    requestTemplate.header("user-info",userId.toString());//将经过网关的微服务的userId传递给服务提供者
 
                 }
             }
         };
     }
 
-    @Bean//一般是写在一个独立的配置类里
+    @Bean//一般是写在一个独立的配置类里,记得绑定bean，否则无效
     public ItemClientFallback itemFallback(){
         return new ItemClientFallback();
+    }
+
+    @Bean
+    public CartClientFallback cartFallback(){
+        return new CartClientFallback();
+    }
+
+    @Bean
+    public UserClientFallback userFallback(){
+        return new UserClientFallback();
+    }
+
+    @Bean
+    public OrderClientFallback orderFallback(){
+        return new OrderClientFallback();
     }
 }

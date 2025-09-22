@@ -16,6 +16,8 @@ import com.hmall.pay.mapper.PayOrderMapper;
 import com.hmall.pay.service.IPayOrderService;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,12 +31,15 @@ import java.time.LocalDateTime;
  * @since 2023-05-16
  */
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> implements IPayOrderService {
 
     private final UserClient userClient;
 
     private final OrderClient orderClient;
+
+    private final RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @Override
     public String applyPayOrder(PayApplyDTO applyDTO) {
@@ -62,7 +67,13 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
             throw new BizIllegalException("交易已支付或关闭！");
         }
         // 5.修改订单状态
-        orderClient.markOrderPaySuccess(po.getId());//这是mp自动填充的，所以只需要有接口的功能是能实现更新支付状态即可
+//        orderClient.markOrderPaySuccess(po.getId());//这是mp自动填充的，所以只需要有接口的功能是能实现更新支付状态即可
+        try {
+            rabbitMessagingTemplate.convertAndSend("pay.direct", "pay.success",po.getBizOrderNo());
+        } catch (Exception e) {
+            log.error("发送支付成功消息异常！支付订单ID{}，交易单ID{}",po.getId(),po.getBizOrderNo(),e);
+        }
+
     }
 
     public boolean markPayOrderSuccess(Long id, LocalDateTime successTime) {
