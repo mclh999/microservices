@@ -81,8 +81,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 //        cartClient.removeByItemIds(itemIds);
         //使用MQ进行异步消息处理
         try {
-            //传入用户ID和购物车里的商品ID,这里的message是amqp的
-
+            // todo 订单功能的MQ应用
+            cartClient.removeByItemIds(itemIds);
             log.info("消息发送成功");
         } catch (Exception e) {
             log.error("发送创建订单消息异常！订单ID = {}", order.getId(), e);
