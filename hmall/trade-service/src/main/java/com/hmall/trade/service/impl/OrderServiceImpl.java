@@ -8,6 +8,7 @@ import com.hmall.api.dto.OrderDetailDTO;
 import com.hmall.api.dto.OrderFormDTO;
 import com.hmall.common.exception.BadRequestException;
 import com.hmall.common.utils.UserContext;
+import com.hmall.trade.constants.Mqconstants;
 import com.hmall.trade.domain.po.Order;
 import com.hmall.trade.domain.po.OrderDetail;
 import com.hmall.trade.mapper.OrderMapper;
@@ -16,7 +17,10 @@ import com.hmall.trade.service.IOrderService;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessagePostProcessor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -42,7 +46,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     private final IOrderDetailService detailService;
     private final ItemClient itemClient;
     private final CartClient cartClient;
-    private final RabbitMessagingTemplate rabbitMessagingTemplate;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     @GlobalTransactional //seata的事务标记起点，让seata知道哪些方法需要加入事务
@@ -83,6 +87,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         try {
             // todo 订单功能的MQ应用
             cartClient.removeByItemIds(itemIds);
+            rabbitTemplate.convertAndSend("trade.exchange", "trade.create.order", order.getId(), new MessagePostProcessor() {
+                @Override
+                public Message postProcessMessage(Message message) throws AmqpException {
+                    message.getMessageProperties().setHeader("userId", UserContext.getUser());
+                    return message;
+                }
+            });
+
             log.info("消息发送成功");
         } catch (Exception e) {
             log.error("发送创建订单消息异常！订单ID = {}", order.getId(), e);
@@ -94,6 +106,17 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         } catch (Exception e) {
             throw new RuntimeException("库存不足！");
         }
+
+        //发送延迟消息，检测订单支付状态
+        rabbitTemplate.convertAndSend(
+                Mqconstants.DELAY_EXCHANGE_NAME,
+                Mqconstants.DELAY_ORDER_KEY,
+                order.getId(),
+                message -> {
+                    message.getMessageProperties().setDelay(15*60000);//延迟15分钟
+                    return message;
+                });
+
         return order.getId();
     }
 
@@ -120,5 +143,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             details.add(detail);
         }
         return details;
+    }
+
+    @Override
+    public void cancelOrder(Long orderId) {
+        //todo 取消订单，回滚库存
+        Order order = new Order();
+        order.setId(orderId);
+        order.setStatus(5);
+        updateById(order);
+
     }
 }
