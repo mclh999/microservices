@@ -1,12 +1,14 @@
 package com.hmall.api.client;
 
 import com.hmall.api.client.fallback.PayClientFallback;
+import com.hmall.api.config.DefaultFeignConfig;
 import com.hmall.api.dto.PayOrderDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(value = "pay-service", fallbackFactory = PayClientFallback.class)
+@FeignClient(value = "pay-service", fallbackFactory = PayClientFallback.class,
+            configuration = DefaultFeignConfig.class)
 public interface PayClient {
     /**
      * 根据交易订单id查询支付单

@@ -47,6 +47,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     private final ItemClient itemClient;
     private final CartClient cartClient;
     private final RabbitTemplate rabbitTemplate;
+    private final OrderMapper orderMapper;
 
     @Override
     @GlobalTransactional //seata的事务标记起点，让seata知道哪些方法需要加入事务
@@ -151,7 +152,22 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         Order order = new Order();
         order.setId(orderId);
         order.setStatus(5);
-        updateById(order);
+        orderMapper.updateById(order);
 
+        //获取订单详情
+        List<OrderDetail> details = detailService.lambdaQuery()
+                .eq(OrderDetail::getOrderId, orderId)
+                .list();
+
+        //扣减负数的库存即可恢复
+        List<OrderDetailDTO> restoreDTO = details.stream().map(detail -> {
+            OrderDetailDTO dto = new OrderDetailDTO();
+            dto.setItemId(detail.getItemId());
+            dto.setNum(-detail.getNum());
+            return dto;
+        }).collect(Collectors.toList());
+
+        //恢复库存
+        itemClient.deductStock(restoreDTO);
     }
 }

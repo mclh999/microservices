@@ -44,7 +44,6 @@ public class TradeListener {
         }else{
             // 4.2 未支付，取消订单，回滚库存
             OrderService.cancelOrder(orderId);
-
         }
     }
 }
