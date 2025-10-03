@@ -28,6 +28,12 @@ public class ItemClientFallback implements FallbackFactory<ItemClient> {
                 //触发回滚事务，抛出异常
                 throw new BizIllegalException(cause);
             }
+
+            @Override
+            public ItemDTO queryItemById(Long id) {
+                //查询失败，返回空
+                return null;
+            }
         };
     }
 }

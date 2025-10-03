@@ -6,6 +6,7 @@ import com.hmall.api.dto.ItemDTO;
 import com.hmall.api.dto.OrderDetailDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -21,4 +22,7 @@ public interface ItemClient {
 
     @PutMapping("/items/stock/deduct")
     void deductStock(List<OrderDetailDTO> detailDTOS);
+
+    @GetMapping("{id}")
+    ItemDTO queryItemById(@PathVariable("id") Long id);
 }
